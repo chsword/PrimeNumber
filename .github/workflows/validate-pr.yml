@@ -1,0 +1,87 @@
+name: 算法验证 (Validate Algorithm PR)
+
+on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'algorithms/**'
+      - 'shared/**'
+      - 'benchmarks/**'
+
+jobs:
+  # ──────────────────────────────────────────────
+  # 1. 正确性验证：运行所有算法的单元测试
+  # ──────────────────────────────────────────────
+  correctness:
+    name: 正确性验证
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 安装 .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: 运行所有算法测试
+        run: |
+          find algorithms -name '*.Tests.csproj' | while read proj; do
+            echo "::group::Testing $proj"
+            dotnet test "$proj" --configuration Release --logger "console;verbosity=normal"
+            echo "::endgroup::"
+          done
+
+  # ──────────────────────────────────────────────
+  # 2. 性能验证：运行基准测试并检查排名
+  # ──────────────────────────────────────────────
+  performance:
+    name: 性能验证
+    needs: correctness
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 安装 .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: 构建基准测试项目
+        run: |
+          dotnet build benchmarks/AlgorithmBenchmarks/AlgorithmBenchmarks.csproj \
+            --configuration Release
+
+      - name: 运行性能测试
+        id: benchmark
+        run: |
+          OUTPUT=$(dotnet run --project benchmarks/AlgorithmBenchmarks/AlgorithmBenchmarks.csproj \
+            --configuration Release -- --simple 2>&1)
+          echo "$OUTPUT"
+          echo "benchmark_output<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$OUTPUT" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
+      - name: 检查新算法排名是否在前 10
+        run: |
+          python3 .github/scripts/check_ranking.py \
+            --output "${{ steps.benchmark.outputs.benchmark_output }}" \
+            --top 10
+
+      - name: 将性能结果写入 PR 评论
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const output = `${{ steps.benchmark.outputs.benchmark_output }}`;
+            const body = `## ⚡ 性能测试结果\n\n\`\`\`\n${output}\n\`\`\`\n`;
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body
+            });
