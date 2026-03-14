@@ -25,6 +25,7 @@
     <ProjectReference Include="../../algorithms/bitwise-sieve/BitwiseSieve/BitwiseSieve.csproj" />
     <ProjectReference Include="../../algorithms/wheel-factorization/WheelFactorization/WheelFactorization.csproj" />
     <ProjectReference Include="../../algorithms/solovay-strassen/SolovayStrassen/SolovayStrassen.csproj" />
+    <ProjectReference Include="../../algorithms/baillie-psw/BailliePSW/BailliePSW.csproj" />
   </ItemGroup>
 
 </Project>
