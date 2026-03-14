@@ -42,7 +42,7 @@ jobs:
     needs: correctness
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       pull-requests: write
     steps:
       - uses: actions/checkout@v4
@@ -102,6 +102,32 @@ jobs:
             fi
           done
           exit $FAILED
+
+      - name: 更新性能排行榜文件
+        run: |
+          python3 .github/scripts/update_rankings.py \
+            --output-file "${{ steps.benchmark.outputs.benchmark_output_file }}" \
+            --rankings-file docs/performance-rankings.md
+
+      - name: 提交排行榜更新到 PR 分支
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/performance-rankings.md
+          if git diff --staged --quiet; then
+            echo "ℹ️ 排行榜无变化，无需提交。"
+          else
+            git commit -m "chore: 更新性能排行榜 [skip ci]"
+            git push origin HEAD:${{ github.head_ref }}
+          fi
+
+      - name: 通知 fork PR 无法自动推送排行榜
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository
+        run: |
+          echo "ℹ️ 来自 fork 仓库的 PR，排行榜更新无法直接推送到 PR 分支，将在合并后由定期任务自动更新。"
 
       - name: 将性能结果写入 PR 评论
         if: always() && github.event_name == 'pull_request'
