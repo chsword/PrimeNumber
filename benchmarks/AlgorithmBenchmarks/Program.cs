@@ -2,9 +2,17 @@ using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Running;
+using BitwiseSieve;
+using LinearSieve;
+using MillerRabin;
 using PrimeAlgorithm.Contracts;
+using SegmentedSieve;
+using SieveOfAtkin;
 using SieveOfEratosthenes;
+using SieveOfSundaram;
+using SolovayStrassen;
 using TrialDivision;
+using WheelFactorization;
 
 // Usage:
 //   dotnet run -c Release                 -> full BenchmarkDotNet run
@@ -27,6 +35,14 @@ public class PrimeBenchmarks
     [
         new SieveOfEratosthenesPrimeChecker(),
         new TrialDivisionPrimeChecker(),
+        new SieveOfSundaramPrimeChecker(),
+        new SieveOfAtkinPrimeChecker(),
+        new MillerRabinPrimeChecker(),
+        new SegmentedSievePrimeChecker(),
+        new LinearSievePrimeChecker(),
+        new BitwiseSievePrimeChecker(),
+        new WheelFactorizationPrimeChecker(),
+        new SolovayStrassenPrimeChecker(),
     ];
 
     [Params(100_000, 1_000_000)]
@@ -41,6 +57,46 @@ public class PrimeBenchmarks
     [BenchmarkCategory("TrialDivision")]
     public int TrialDivision_GetPrimesUpTo()
         => Checkers[1].GetPrimesUpTo(Max).Count();
+
+    [Benchmark]
+    [BenchmarkCategory("SieveOfSundaram")]
+    public int SieveOfSundaram_GetPrimesUpTo()
+        => Checkers[2].GetPrimesUpTo(Max).Count();
+
+    [Benchmark]
+    [BenchmarkCategory("SieveOfAtkin")]
+    public int SieveOfAtkin_GetPrimesUpTo()
+        => Checkers[3].GetPrimesUpTo(Max).Count();
+
+    [Benchmark]
+    [BenchmarkCategory("MillerRabin")]
+    public int MillerRabin_GetPrimesUpTo()
+        => Checkers[4].GetPrimesUpTo(Max).Count();
+
+    [Benchmark]
+    [BenchmarkCategory("SegmentedSieve")]
+    public int SegmentedSieve_GetPrimesUpTo()
+        => Checkers[5].GetPrimesUpTo(Max).Count();
+
+    [Benchmark]
+    [BenchmarkCategory("LinearSieve")]
+    public int LinearSieve_GetPrimesUpTo()
+        => Checkers[6].GetPrimesUpTo(Max).Count();
+
+    [Benchmark]
+    [BenchmarkCategory("BitwiseSieve")]
+    public int BitwiseSieve_GetPrimesUpTo()
+        => Checkers[7].GetPrimesUpTo(Max).Count();
+
+    [Benchmark]
+    [BenchmarkCategory("WheelFactorization")]
+    public int WheelFactorization_GetPrimesUpTo()
+        => Checkers[8].GetPrimesUpTo(Max).Count();
+
+    [Benchmark]
+    [BenchmarkCategory("SolovayStrassen")]
+    public int SolovayStrassen_GetPrimesUpTo()
+        => Checkers[9].GetPrimesUpTo(Max).Count();
 }
 
 /// <summary>
@@ -57,6 +113,14 @@ internal static class SimpleRunner
     [
         new SieveOfEratosthenesPrimeChecker(),
         new TrialDivisionPrimeChecker(),
+        new SieveOfSundaramPrimeChecker(),
+        new SieveOfAtkinPrimeChecker(),
+        new MillerRabinPrimeChecker(),
+        new SegmentedSievePrimeChecker(),
+        new LinearSievePrimeChecker(),
+        new BitwiseSievePrimeChecker(),
+        new WheelFactorizationPrimeChecker(),
+        new SolovayStrassenPrimeChecker(),
     ];
 
     internal static void Run()
