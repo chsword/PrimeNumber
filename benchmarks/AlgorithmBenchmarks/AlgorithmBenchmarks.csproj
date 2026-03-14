@@ -26,6 +26,11 @@
     <ProjectReference Include="../../algorithms/wheel-factorization/WheelFactorization/WheelFactorization.csproj" />
     <ProjectReference Include="../../algorithms/solovay-strassen/SolovayStrassen/SolovayStrassen.csproj" />
     <ProjectReference Include="../../algorithms/baillie-psw/BailliePSW/BailliePSW.csproj" />
+    <ProjectReference Include="../../algorithms/aks/AKS/AKS.csproj" />
+    <ProjectReference Include="../../algorithms/fermat/Fermat/Fermat.csproj" />
+    <ProjectReference Include="../../algorithms/sieve-of-pritchard/SieveOfPritchard/SieveOfPritchard.csproj" />
+    <ProjectReference Include="../../algorithms/quadratic-frobenius/QuadraticFrobenius/QuadraticFrobenius.csproj" />
+    <ProjectReference Include="../../algorithms/enhanced-wheel-sieve/EnhancedWheelSieve/EnhancedWheelSieve.csproj" />
   </ItemGroup>
 
 </Project>
