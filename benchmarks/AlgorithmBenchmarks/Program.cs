@@ -5,10 +5,13 @@ using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Running;
 using BitwiseSieve;
+using BitwiseSegmentedSieve;
 using EnhancedWheelSieve;
+using EulerLinearSegmentedSieve;
 using Fermat;
 using LinearSieve;
 using MillerRabin;
+using ParallelSegmentedSieve;
 using PrimeAlgorithm.Contracts;
 using QuadraticFrobenius;
 using SegmentedSieve;
@@ -16,8 +19,10 @@ using SieveOfAtkin;
 using SieveOfEratosthenes;
 using SieveOfPritchard;
 using SieveOfSundaram;
+using SieveOfZakiya;
 using SolovayStrassen;
 using TrialDivision;
+using Wheel30SegmentedSieve;
 using WheelFactorization;
 
 // Usage:
@@ -55,6 +60,11 @@ public class PrimeBenchmarks
         new SieveOfPritchardPrimeChecker(),
         new QuadraticFrobeniusPrimeChecker(),
         new EnhancedWheelSievePrimeChecker(),
+        new ParallelSegmentedSievePrimeChecker(),
+        new BitwiseSegmentedSievePrimeChecker(),
+        new SieveOfZakiyaPrimeChecker(),
+        new Wheel30SegmentedSievePrimeChecker(),
+        new EulerLinearSegmentedSievePrimeChecker(),
     ];
 
     [Params(100_000, 1_000_000)]
@@ -139,6 +149,31 @@ public class PrimeBenchmarks
     [BenchmarkCategory("EnhancedWheelSieve")]
     public int EnhancedWheelSieve_GetPrimesUpTo()
         => Checkers[15].GetPrimesUpTo(Max).Count();
+
+    [Benchmark]
+    [BenchmarkCategory("ParallelSegmentedSieve")]
+    public int ParallelSegmentedSieve_GetPrimesUpTo()
+        => Checkers[16].GetPrimesUpTo(Max).Count();
+
+    [Benchmark]
+    [BenchmarkCategory("BitwiseSegmentedSieve")]
+    public int BitwiseSegmentedSieve_GetPrimesUpTo()
+        => Checkers[17].GetPrimesUpTo(Max).Count();
+
+    [Benchmark]
+    [BenchmarkCategory("SieveOfZakiya")]
+    public int SieveOfZakiya_GetPrimesUpTo()
+        => Checkers[18].GetPrimesUpTo(Max).Count();
+
+    [Benchmark]
+    [BenchmarkCategory("Wheel30SegmentedSieve")]
+    public int Wheel30SegmentedSieve_GetPrimesUpTo()
+        => Checkers[19].GetPrimesUpTo(Max).Count();
+
+    [Benchmark]
+    [BenchmarkCategory("EulerLinearSegmentedSieve")]
+    public int EulerLinearSegmentedSieve_GetPrimesUpTo()
+        => Checkers[20].GetPrimesUpTo(Max).Count();
 }
 
 /// <summary>
@@ -169,6 +204,11 @@ internal static class SimpleRunner
         new SieveOfPritchardPrimeChecker(),
         new QuadraticFrobeniusPrimeChecker(),
         new EnhancedWheelSievePrimeChecker(),
+        new ParallelSegmentedSievePrimeChecker(),
+        new BitwiseSegmentedSievePrimeChecker(),
+        new SieveOfZakiyaPrimeChecker(),
+        new Wheel30SegmentedSievePrimeChecker(),
+        new EulerLinearSegmentedSievePrimeChecker(),
     ];
 
     internal static void Run()
