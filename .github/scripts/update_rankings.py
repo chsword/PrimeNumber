@@ -12,7 +12,9 @@ from datetime import datetime, timezone
 
 def parse_args():
     parser = argparse.ArgumentParser(description="更新性能排行榜")
-    parser.add_argument("--output", required=True, help="基准测试输出内容")
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument("--output", help="基准测试输出内容（文本）")
+    group.add_argument("--output-file", help="包含基准测试输出的文件路径")
     parser.add_argument("--rankings-file", required=True, help="排行榜 Markdown 文件路径")
     return parser.parse_args()
 
@@ -88,7 +90,12 @@ def build_markdown(rankings: list[tuple[int, str, float]]) -> str:
 
 def main():
     args = parse_args()
-    rankings = parse_rankings(args.output)
+    if args.output_file:
+        with open(args.output_file, encoding="utf-8") as f:
+            output = f.read()
+    else:
+        output = args.output
+    rankings = parse_rankings(output)
 
     if not rankings:
         print("⚠️  未找到排名信息，跳过更新。")
