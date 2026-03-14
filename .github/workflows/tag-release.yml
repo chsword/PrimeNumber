@@ -1,0 +1,60 @@
+name: 定期打标签并清理排名靠后的算法
+
+on:
+  schedule:
+    # 每周一 UTC 00:00 执行
+    - cron: '0 0 * * 1'
+  workflow_dispatch:
+
+jobs:
+  tag-and-cleanup:
+    name: 打标签 & 清理算法
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 安装 .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: 运行性能测试并生成排名
+        id: rank
+        run: |
+          OUTPUT=$(dotnet run --project benchmarks/AlgorithmBenchmarks/AlgorithmBenchmarks.csproj \
+            --configuration Release -- --simple 2>&1)
+          echo "$OUTPUT"
+          echo "benchmark_output<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$OUTPUT" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
+      - name: 打版本标签
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          DATE=$(date +%Y%m%d)
+          TAG="snapshot-${DATE}"
+          git tag "$TAG"
+          git push origin "$TAG"
+          echo "Created tag: $TAG"
+
+      - name: 更新性能排行榜
+        run: |
+          python3 .github/scripts/update_rankings.py \
+            --output "${{ steps.rank.outputs.benchmark_output }}" \
+            --rankings-file docs/performance-rankings.md
+
+      - name: 提交排行榜更新
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/performance-rankings.md
+          git diff --staged --quiet || git commit -m "chore: 更新性能排行榜 $(date +%Y-%m-%d)"
+          git push
