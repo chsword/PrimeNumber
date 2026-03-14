@@ -7,6 +7,7 @@ on:
       - 'algorithms/**'
       - 'shared/**'
       - 'benchmarks/**'
+  workflow_dispatch:
 
 jobs:
   # ──────────────────────────────────────────────
@@ -46,6 +47,28 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: 检测新增算法目录
+        id: detect-algo
+        # 仅在 pull_request 事件时才能比对 base 分支；workflow_dispatch 时跳过检测
+        if: github.event_name == 'pull_request'
+        run: |
+          git fetch origin refs/heads/${{ github.base_ref }} --depth=1
+          NEW=$(git diff --name-only --diff-filter=A FETCH_HEAD HEAD \
+            | grep '^algorithms/' \
+            | grep -oE '^algorithms/[^/]+' \
+            | sort -u \
+            | sed 's|algorithms/||' \
+            | tr '\n' ',')
+          NEW="${NEW%,}"
+          echo "new_algorithm_dirs=${NEW}" >> "$GITHUB_OUTPUT"
+          if [ -n "$NEW" ]; then
+            echo "is_new_algorithm=true" >> "$GITHUB_OUTPUT"
+            echo "✅ 检测到新增算法目录: $NEW"
+          else
+            echo "is_new_algorithm=false" >> "$GITHUB_OUTPUT"
+            echo "ℹ️ 未检测到新增算法目录，性能测试仅供参考，不作为合并门槛。"
+          fi
+
       - name: 安装 .NET 10
         uses: actions/setup-dotnet@v4
         with:
@@ -64,13 +87,24 @@ jobs:
           echo "benchmark_output_file=/tmp/benchmark_output.txt" >> "$GITHUB_OUTPUT"
 
       - name: 检查新算法排名是否在前 10
+        # 仅在 PR 新增了算法目录时才作为门槛检查
+        if: steps.detect-algo.outputs.is_new_algorithm == 'true'
         run: |
-          python3 .github/scripts/check_ranking.py \
-            --output-file "${{ steps.benchmark.outputs.benchmark_output_file }}" \
-            --top 10
+          FAILED=0
+          IFS=',' read -ra DIRS <<< "${{ steps.detect-algo.outputs.new_algorithm_dirs }}"
+          for DIR in "${DIRS[@]}"; do
+            echo "--- 检查目录: $DIR ---"
+            if ! python3 .github/scripts/check_ranking.py \
+              --output-file "${{ steps.benchmark.outputs.benchmark_output_file }}" \
+              --top 10 \
+              --new-algorithm "$DIR"; then
+              FAILED=1
+            fi
+          done
+          exit $FAILED
 
       - name: 将性能结果写入 PR 评论
-        if: always()
+        if: always() && github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
           script: |
@@ -83,7 +117,12 @@ jobs:
               console.error('读取基准测试结果失败:', e);
               output = '(未找到基准测试结果)';
             }
-            const body = `## ⚡ 性能测试结果\n\n\`\`\`\n${output}\n\`\`\`\n`;
+            const isNewAlgo = '${{ steps.detect-algo.outputs.is_new_algorithm }}' === 'true';
+            const newDirs = '${{ steps.detect-algo.outputs.new_algorithm_dirs }}';
+            const hint = isNewAlgo
+              ? `> 🆕 检测到新增算法目录：\`${newDirs}\`，已对其排名进行门槛检查。\n\n`
+              : `> ℹ️ 本次 PR 未检测到新增算法，性能数据仅供参考。\n\n`;
+            const body = `## ⚡ 性能测试结果\n\n${hint}\`\`\`\n${output}\n\`\`\`\n`;
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
