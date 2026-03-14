@@ -1,15 +1,20 @@
+using AKS;
 using BailliePSW;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Running;
 using BitwiseSieve;
+using EnhancedWheelSieve;
+using Fermat;
 using LinearSieve;
 using MillerRabin;
 using PrimeAlgorithm.Contracts;
+using QuadraticFrobenius;
 using SegmentedSieve;
 using SieveOfAtkin;
 using SieveOfEratosthenes;
+using SieveOfPritchard;
 using SieveOfSundaram;
 using SolovayStrassen;
 using TrialDivision;
@@ -45,6 +50,11 @@ public class PrimeBenchmarks
         new WheelFactorizationPrimeChecker(),
         new SolovayStrassenPrimeChecker(),
         new BailliePSWPrimeChecker(),
+        new AKSPrimeChecker(),
+        new FermatPrimeChecker(),
+        new SieveOfPritchardPrimeChecker(),
+        new QuadraticFrobeniusPrimeChecker(),
+        new EnhancedWheelSievePrimeChecker(),
     ];
 
     [Params(100_000, 1_000_000)]
@@ -104,6 +114,31 @@ public class PrimeBenchmarks
     [BenchmarkCategory("BailliePSW")]
     public int BailliePSW_GetPrimesUpTo()
         => Checkers[10].GetPrimesUpTo(Max).Count();
+
+    [Benchmark]
+    [BenchmarkCategory("AKS")]
+    public int AKS_GetPrimesUpTo()
+        => Checkers[11].GetPrimesUpTo(Max).Count();
+
+    [Benchmark]
+    [BenchmarkCategory("Fermat")]
+    public int Fermat_GetPrimesUpTo()
+        => Checkers[12].GetPrimesUpTo(Max).Count();
+
+    [Benchmark]
+    [BenchmarkCategory("SieveOfPritchard")]
+    public int SieveOfPritchard_GetPrimesUpTo()
+        => Checkers[13].GetPrimesUpTo(Max).Count();
+
+    [Benchmark]
+    [BenchmarkCategory("QuadraticFrobenius")]
+    public int QuadraticFrobenius_GetPrimesUpTo()
+        => Checkers[14].GetPrimesUpTo(Max).Count();
+
+    [Benchmark]
+    [BenchmarkCategory("EnhancedWheelSieve")]
+    public int EnhancedWheelSieve_GetPrimesUpTo()
+        => Checkers[15].GetPrimesUpTo(Max).Count();
 }
 
 /// <summary>
@@ -129,6 +164,11 @@ internal static class SimpleRunner
         new WheelFactorizationPrimeChecker(),
         new SolovayStrassenPrimeChecker(),
         new BailliePSWPrimeChecker(),
+        new AKSPrimeChecker(),
+        new FermatPrimeChecker(),
+        new SieveOfPritchardPrimeChecker(),
+        new QuadraticFrobeniusPrimeChecker(),
+        new EnhancedWheelSievePrimeChecker(),
     ];
 
     internal static void Run()
