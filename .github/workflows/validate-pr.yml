@@ -2,7 +2,7 @@ name: 算法验证 (Validate Algorithm PR)
 
 on:
   pull_request:
-    branches: [ main ]
+    branches: [ master ]
     types: [ opened, synchronize, reopened, ready_for_review ]
     paths:
       - 'algorithms/**'
