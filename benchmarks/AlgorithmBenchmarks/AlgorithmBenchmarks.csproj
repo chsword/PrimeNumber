@@ -17,6 +17,14 @@
     <ProjectReference Include="../../shared/PrimeAlgorithm.Contracts/PrimeAlgorithm.Contracts.csproj" />
     <ProjectReference Include="../../algorithms/sieve-of-eratosthenes/SieveOfEratosthenes/SieveOfEratosthenes.csproj" />
     <ProjectReference Include="../../algorithms/trial-division/TrialDivision/TrialDivision.csproj" />
+    <ProjectReference Include="../../algorithms/sieve-of-sundaram/SieveOfSundaram/SieveOfSundaram.csproj" />
+    <ProjectReference Include="../../algorithms/sieve-of-atkin/SieveOfAtkin/SieveOfAtkin.csproj" />
+    <ProjectReference Include="../../algorithms/miller-rabin/MillerRabin/MillerRabin.csproj" />
+    <ProjectReference Include="../../algorithms/segmented-sieve/SegmentedSieve/SegmentedSieve.csproj" />
+    <ProjectReference Include="../../algorithms/linear-sieve/LinearSieve/LinearSieve.csproj" />
+    <ProjectReference Include="../../algorithms/bitwise-sieve/BitwiseSieve/BitwiseSieve.csproj" />
+    <ProjectReference Include="../../algorithms/wheel-factorization/WheelFactorization/WheelFactorization.csproj" />
+    <ProjectReference Include="../../algorithms/solovay-strassen/SolovayStrassen/SolovayStrassen.csproj" />
   </ItemGroup>
 
 </Project>
