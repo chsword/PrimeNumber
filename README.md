@@ -96,6 +96,18 @@ public class MyPrimeChecker : IPrimeChecker
 
 ---
 
+### 3. Baillie-PSW 素性测试 (Baillie-PSW Primality Test)
+
+**目录：** `algorithms/baillie-psw/`
+
+由 Robert Baillie、Carl Pomerance、John Selfridge 和 Samuel Wagstaff 于 1980 年提出，将 **强 Miller-Rabin 基-2 测试** 与 **强 Lucas 伪素数测试**（Selfridge 方法 A）结合。两种测试独立互补，在 2^80 范围内无已知假阳性（伪素数）。
+
+- 时间复杂度（单次判断）：O(log² n)
+- 空间复杂度：O(1)
+- 适用场景：单次质数判断，尤其适用于对正确性要求极高的场景
+
+---
+
 ## 性能排行榜
 
 详见 [docs/performance-rankings.md](docs/performance-rankings.md)。

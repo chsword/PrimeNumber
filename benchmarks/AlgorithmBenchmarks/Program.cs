@@ -1,3 +1,4 @@
+using BailliePSW;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Jobs;
@@ -43,6 +44,7 @@ public class PrimeBenchmarks
         new BitwiseSievePrimeChecker(),
         new WheelFactorizationPrimeChecker(),
         new SolovayStrassenPrimeChecker(),
+        new BailliePSWPrimeChecker(),
     ];
 
     [Params(100_000, 1_000_000)]
@@ -97,6 +99,11 @@ public class PrimeBenchmarks
     [BenchmarkCategory("SolovayStrassen")]
     public int SolovayStrassen_GetPrimesUpTo()
         => Checkers[9].GetPrimesUpTo(Max).Count();
+
+    [Benchmark]
+    [BenchmarkCategory("BailliePSW")]
+    public int BailliePSW_GetPrimesUpTo()
+        => Checkers[10].GetPrimesUpTo(Max).Count();
 }
 
 /// <summary>
@@ -121,6 +128,7 @@ internal static class SimpleRunner
         new BitwiseSievePrimeChecker(),
         new WheelFactorizationPrimeChecker(),
         new SolovayStrassenPrimeChecker(),
+        new BailliePSWPrimeChecker(),
     ];
 
     internal static void Run()
