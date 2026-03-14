@@ -26,12 +26,9 @@ jobs:
       - name: 运行性能测试并生成排名
         id: rank
         run: |
-          OUTPUT=$(dotnet run --project benchmarks/AlgorithmBenchmarks/AlgorithmBenchmarks.csproj \
-            --configuration Release -- --simple 2>&1)
-          echo "$OUTPUT"
-          echo "benchmark_output<<EOF" >> "$GITHUB_OUTPUT"
-          echo "$OUTPUT" >> "$GITHUB_OUTPUT"
-          echo "EOF" >> "$GITHUB_OUTPUT"
+          dotnet run --project benchmarks/AlgorithmBenchmarks/AlgorithmBenchmarks.csproj \
+            --configuration Release -- --simple 2>&1 | tee /tmp/benchmark_output.txt
+          echo "benchmark_output_file=/tmp/benchmark_output.txt" >> "$GITHUB_OUTPUT"
 
       - name: 打版本标签
         env:
@@ -46,7 +43,7 @@ jobs:
       - name: 更新性能排行榜
         run: |
           python3 .github/scripts/update_rankings.py \
-            --output "${{ steps.rank.outputs.benchmark_output }}" \
+            --output-file "${{ steps.rank.outputs.benchmark_output_file }}" \
             --rankings-file docs/performance-rankings.md
 
       - name: 提交排行榜更新
