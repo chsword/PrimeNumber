@@ -36,6 +36,7 @@
     <ProjectReference Include="../../algorithms/sieve-of-zakiya/SieveOfZakiya/SieveOfZakiya.csproj" />
     <ProjectReference Include="../../algorithms/wheel-30-segmented-sieve/Wheel30SegmentedSieve/Wheel30SegmentedSieve.csproj" />
     <ProjectReference Include="../../algorithms/euler-linear-segmented-sieve/EulerLinearSegmentedSieve/EulerLinearSegmentedSieve.csproj" />
+    <ProjectReference Include="../../algorithms/wheel-210-sieve/Wheel210Sieve/Wheel210Sieve.csproj" />
   </ItemGroup>
 
 </Project>

@@ -23,6 +23,7 @@ using SieveOfZakiya;
 using SolovayStrassen;
 using TrialDivision;
 using Wheel30SegmentedSieve;
+using Wheel210Sieve;
 using WheelFactorization;
 
 // Usage:
@@ -65,6 +66,7 @@ public class PrimeBenchmarks
         new SieveOfZakiyaPrimeChecker(),
         new Wheel30SegmentedSievePrimeChecker(),
         new EulerLinearSegmentedSievePrimeChecker(),
+        new Wheel210SievePrimeChecker(),
     ];
 
     [Params(100_000, 1_000_000)]
@@ -174,6 +176,11 @@ public class PrimeBenchmarks
     [BenchmarkCategory("EulerLinearSegmentedSieve")]
     public int EulerLinearSegmentedSieve_GetPrimesUpTo()
         => Checkers[20].GetPrimesUpTo(Max).Count();
+
+    [Benchmark]
+    [BenchmarkCategory("Wheel210Sieve")]
+    public int Wheel210Sieve_GetPrimesUpTo()
+        => Checkers[21].GetPrimesUpTo(Max).Count();
 }
 
 /// <summary>
@@ -207,6 +214,7 @@ internal static class SimpleRunner
         new SieveOfZakiyaPrimeChecker(),
         new Wheel30SegmentedSievePrimeChecker(),
         new EulerLinearSegmentedSievePrimeChecker(),
+        new Wheel210SievePrimeChecker(),
     ];
 
     internal static void Run()
