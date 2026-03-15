@@ -79,8 +79,6 @@ public class BitwiseSegmentedSievePrimeChecker : IPrimeChecker
 
         if (firstSegK > maxOddK) yield break;
 
-        int words = (BitsPerSegment + 63) / 64;
-        var segBits = new ulong[words];
         var spArr = smallPrimes.ToArray();
 
         for (long segStart = firstSegK; segStart <= maxOddK; segStart += BitsPerSegment)
@@ -89,8 +87,7 @@ public class BitwiseSegmentedSievePrimeChecker : IPrimeChecker
             int len = (int)(segEnd - segStart + 1);
             int lenWords = (len + 63) / 64;
 
-            // Reset used words
-            Array.Clear(segBits, 0, lenWords);
+            var segBits = new ulong[lenWords];
 
             // Mark composites using small primes
             foreach (var p in spArr)
