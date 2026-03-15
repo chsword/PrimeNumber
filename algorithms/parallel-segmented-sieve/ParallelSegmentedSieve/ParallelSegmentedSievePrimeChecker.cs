@@ -69,7 +69,8 @@ public class ParallelSegmentedSievePrimeChecker : IPrimeChecker
         long totalRange = max - rangeStart + 1;
         int segCount = (int)((totalRange + SegmentSize - 1) / SegmentSize);
 
-        // Allocate result storage per segment (will be sorted at end)
+        // Allocate result storage per segment; segments are indexed 0..segCount-1 and
+        // yielded in that index order, which preserves ascending numerical order.
         var segmentResults = new List<long>[segCount];
         for (int s = 0; s < segCount; s++)
             segmentResults[s] = new List<long>();

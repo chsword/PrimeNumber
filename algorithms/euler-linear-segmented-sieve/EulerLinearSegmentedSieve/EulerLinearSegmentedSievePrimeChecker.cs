@@ -6,8 +6,8 @@ namespace EulerLinearSegmentedSieve;
 /// 欧拉线性分段筛法（Euler Linear Segmented Sieve）
 /// 将欧拉线性筛与分段思想结合：先用欧拉线性筛求出 √n 以内的所有小素数，
 /// 再用分段筛将大范围划分为若干段逐一处理，显著减少内存占用并提升缓存命中率。
-/// 欧拉线性筛保证每个合数只被其最小质因子筛去（O(n) 次标记操作）。
-/// 时间复杂度：O(n)，空间复杂度：O(√n)（分段部分）
+/// 欧拉线性筛保证每个合数只被其最小质因子筛去（生成小素数部分 O(√n)）。
+/// 时间复杂度：O(n log log n)，空间复杂度：O(√n)（分段部分）
 /// </summary>
 public class EulerLinearSegmentedSievePrimeChecker : IPrimeChecker
 {
