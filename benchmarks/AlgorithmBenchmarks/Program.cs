@@ -5,10 +5,13 @@ using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Running;
 using BitwiseSieve;
+using BitwiseSegmentedSieve;
 using EnhancedWheelSieve;
+using EulerLinearSegmentedSieve;
 using Fermat;
 using LinearSieve;
 using MillerRabin;
+using ParallelSegmentedSieve;
 using PrimeAlgorithm.Contracts;
 using QuadraticFrobenius;
 using SegmentedSieve;
@@ -16,8 +19,10 @@ using SieveOfAtkin;
 using SieveOfEratosthenes;
 using SieveOfPritchard;
 using SieveOfSundaram;
+using SieveOfZakiya;
 using SolovayStrassen;
 using TrialDivision;
+using Wheel30SegmentedSieve;
 using WheelFactorization;
 
 // Usage:
@@ -55,6 +60,11 @@ public class PrimeBenchmarks
         new SieveOfPritchardPrimeChecker(),
         new QuadraticFrobeniusPrimeChecker(),
         new EnhancedWheelSievePrimeChecker(),
+        new ParallelSegmentedSievePrimeChecker(),
+        new BitwiseSegmentedSievePrimeChecker(),
+        new SieveOfZakiyaPrimeChecker(),
+        new Wheel30SegmentedSievePrimeChecker(),
+        new EulerLinearSegmentedSievePrimeChecker(),
     ];
 
     [Params(100_000, 1_000_000)]
@@ -139,6 +149,31 @@ public class PrimeBenchmarks
     [BenchmarkCategory("EnhancedWheelSieve")]
     public int EnhancedWheelSieve_GetPrimesUpTo()
         => Checkers[15].GetPrimesUpTo(Max).Count();
+
+    [Benchmark]
+    [BenchmarkCategory("ParallelSegmentedSieve")]
+    public int ParallelSegmentedSieve_GetPrimesUpTo()
+        => Checkers[16].GetPrimesUpTo(Max).Count();
+
+    [Benchmark]
+    [BenchmarkCategory("BitwiseSegmentedSieve")]
+    public int BitwiseSegmentedSieve_GetPrimesUpTo()
+        => Checkers[17].GetPrimesUpTo(Max).Count();
+
+    [Benchmark]
+    [BenchmarkCategory("SieveOfZakiya")]
+    public int SieveOfZakiya_GetPrimesUpTo()
+        => Checkers[18].GetPrimesUpTo(Max).Count();
+
+    [Benchmark]
+    [BenchmarkCategory("Wheel30SegmentedSieve")]
+    public int Wheel30SegmentedSieve_GetPrimesUpTo()
+        => Checkers[19].GetPrimesUpTo(Max).Count();
+
+    [Benchmark]
+    [BenchmarkCategory("EulerLinearSegmentedSieve")]
+    public int EulerLinearSegmentedSieve_GetPrimesUpTo()
+        => Checkers[20].GetPrimesUpTo(Max).Count();
 }
 
 /// <summary>
@@ -148,8 +183,6 @@ public class PrimeBenchmarks
 internal static class SimpleRunner
 {
     private const long BenchMax = 1_000_000;
-    private const int Warmup = 1;
-    private const int Iterations = 3;
 
     private static readonly IPrimeChecker[] Checkers =
     [
@@ -169,45 +202,61 @@ internal static class SimpleRunner
         new SieveOfPritchardPrimeChecker(),
         new QuadraticFrobeniusPrimeChecker(),
         new EnhancedWheelSievePrimeChecker(),
+        new ParallelSegmentedSievePrimeChecker(),
+        new BitwiseSegmentedSievePrimeChecker(),
+        new SieveOfZakiyaPrimeChecker(),
+        new Wheel30SegmentedSievePrimeChecker(),
+        new EulerLinearSegmentedSievePrimeChecker(),
     ];
 
     internal static void Run()
     {
         Console.WriteLine("# PrimeAlgorithm Performance Results");
         Console.WriteLine($"# Benchmark: GetPrimesUpTo({BenchMax:N0})");
-        Console.WriteLine("# Format: AlgorithmName<TAB>MedianMs");
+        Console.WriteLine("# Format: AlgorithmName<TAB>ElapsedMs");
         Console.WriteLine();
 
-        var results = new List<(string Name, double MedianMs)>();
+        var results = new List<(string Name, double ElapsedMs)>();
+        // Tracks the slowest completed time; timeout = max(2× slowest, MinTimeoutMs).
+        // The floor ensures that typical algorithms (up to a few hundred ms) always finish,
+        // while truly extreme outliers (e.g. algorithms taking minutes) are skipped.
+        const double MinTimeoutMs = 3000;
+        double worstMs = 0;
 
         foreach (var checker in Checkers)
         {
-            // warmup
-            for (int i = 0; i < Warmup; i++)
-                _ = checker.GetPrimesUpTo(BenchMax).Count();
+            // Timeout is 2× the current slowest, but never below MinTimeoutMs.
+            double timeoutMs = Math.Max(worstMs * 2.0, MinTimeoutMs);
 
-            var timings = new double[Iterations];
-            for (int i = 0; i < Iterations; i++)
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+            // Run on a background task so we can enforce the timeout.
+            // Note: IPrimeChecker does not accept CancellationToken, so a timed-out task
+            // continues executing in the background but holds no shared mutable state and
+            // will be reclaimed when the process exits at the end of the benchmark run.
+            var task = Task.Run(() => _ = checker.GetPrimesUpTo(BenchMax).Count());
+            bool timedOut = !task.Wait(TimeSpan.FromMilliseconds(timeoutMs));
+            sw.Stop();
+            double elapsed = sw.Elapsed.TotalMilliseconds;
+
+            if (timedOut)
             {
-                var sw = System.Diagnostics.Stopwatch.StartNew();
-                _ = checker.GetPrimesUpTo(BenchMax).Count();
-                sw.Stop();
-                timings[i] = sw.Elapsed.TotalMilliseconds;
+                Console.WriteLine($"{checker.AlgorithmName}\t超时/Timeout (>{timeoutMs:F0}ms)");
             }
-
-            Array.Sort(timings);
-            var median = timings[Iterations / 2];
-            results.Add((checker.AlgorithmName, median));
-            Console.WriteLine($"{checker.AlgorithmName}\t{median:F2}");
+            else
+            {
+                if (elapsed > worstMs) worstMs = elapsed;
+                results.Add((checker.AlgorithmName, elapsed));
+                Console.WriteLine($"{checker.AlgorithmName}\t{elapsed:F2}");
+            }
         }
 
-        // Rank by median time (ascending = faster is better)
-        results.Sort((a, b) => a.MedianMs.CompareTo(b.MedianMs));
+        // Rank by elapsed time (ascending = faster is better)
+        results.Sort((a, b) => a.ElapsedMs.CompareTo(b.ElapsedMs));
         Console.WriteLine();
         Console.WriteLine("# Ranking (fastest first):");
         for (int i = 0; i < results.Count; i++)
         {
-            Console.WriteLine($"#{i + 1}\t{results[i].Name}\t{results[i].MedianMs:F2}ms");
+            Console.WriteLine($"#{i + 1}\t{results[i].Name}\t{results[i].ElapsedMs:F2}ms");
         }
     }
 }
