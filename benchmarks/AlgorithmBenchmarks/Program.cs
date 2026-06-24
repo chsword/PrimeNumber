@@ -24,6 +24,7 @@ using SolovayStrassen;
 using TrialDivision;
 using Wheel30SegmentedSieve;
 using Wheel210Sieve;
+using Wheel2310Sieve;
 using WheelFactorization;
 
 // Usage:
@@ -67,6 +68,7 @@ public class PrimeBenchmarks
         new Wheel30SegmentedSievePrimeChecker(),
         new EulerLinearSegmentedSievePrimeChecker(),
         new Wheel210SievePrimeChecker(),
+        new Wheel2310SievePrimeChecker(),
     ];
 
     [Params(100_000, 1_000_000)]
@@ -181,6 +183,11 @@ public class PrimeBenchmarks
     [BenchmarkCategory("Wheel210Sieve")]
     public int Wheel210Sieve_GetPrimesUpTo()
         => Checkers[21].GetPrimesUpTo(Max).Count();
+
+    [Benchmark]
+    [BenchmarkCategory("Wheel2310Sieve")]
+    public int Wheel2310Sieve_GetPrimesUpTo()
+        => Checkers[22].GetPrimesUpTo(Max).Count();
 }
 
 /// <summary>
@@ -215,6 +222,7 @@ internal static class SimpleRunner
         new Wheel30SegmentedSievePrimeChecker(),
         new EulerLinearSegmentedSievePrimeChecker(),
         new Wheel210SievePrimeChecker(),
+        new Wheel2310SievePrimeChecker(),
     ];
 
     internal static void Run()
